@@ -11,7 +11,8 @@ st.set_page_config(page_title="SmartSpend Copilot", layout="wide")
 st.title("📊 SmartSpend: Personal Finance Copilot")
 
 # --- Google Gemini Pro Setup ---
-GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"] if "GEMINI_API_KEY" in st.secrets else os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 if not GEMINI_API_KEY:
     st.error("API key for Gemini Pro not found. Please set it in your environment or .streamlit/secrets.toml")
     st.stop()
