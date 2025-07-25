@@ -61,6 +61,10 @@ Smartspend-Copilot/
    pip install -r requirements.txt
    GEMINI_API_KEY = "your_api_key_here"
    streamlit run smartspend_app.py
+
+## 🌐 Live Demo
+👉 [Try SmartSpend Copilot on Render](https://smartspend-copilot-ldpz.onrender.com)
+
 ## 📌 Future Enhancements
 
 - Extend to support general EDA on any dataset
