@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 import os
+import io
 
 # --- Set Page Title ---
 st.set_page_config(page_title="SmartSpend Copilot", layout="wide")
@@ -18,13 +19,14 @@ if not GEMINI_API_KEY:
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
 
+# --- File Upload ---
 uploaded_file = st.file_uploader("Upload your dataset (CSV format)", type="csv")
+
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.success("File uploaded successfully!")
     st.subheader("📊 Preview of Data")
     st.dataframe(df.head())
-
 
     # --- Date Conversion ---
     if 'Date' in df.columns:
@@ -36,33 +38,27 @@ if uploaded_file is not None:
         df['Category'] = df['Category'].str.strip().str.title()
     if 'Type' in df.columns:
         df['Type'] = df['Type'].str.strip().str.title()
-if uploaded_file is not None:
+
+    # --- Data Info & Null Values ---
     st.subheader("🧹 Data Cleaning & Structure")
-    st.write(df.info())
+    buffer = io.StringIO()
+    df.info(buf=buffer)
+    info_str = buffer.getvalue()
+    st.text(info_str)
     st.write("Null values per column:")
     st.write(df.isnull().sum())
 
+    # --- Summary Statistics ---
     st.subheader("📈 Summary Statistics")
     st.write(df.describe(include='all'))
 
+    # --- Correlation ---
     st.subheader("🔁 Correlation Heatmap (numeric columns)")
     numeric_df = df.select_dtypes(include='number')
     if not numeric_df.empty:
-        st.write(numeric_df.corr())
-import io
+        st.dataframe(numeric_df.corr())
 
-# Convert summary to string
-summary_str = io.StringIO()
-df.info(buf=summary_str)
-eda_summary = summary_str.getvalue()
-
-eda_summary += "\n\nColumn summaries:\n"
-eda_summary += str(df.describe(include='all'))
-
-    # --- EDA Summary ---
-    st.subheader("📈 Summary Statistics")
-    st.dataframe(df.describe(include='all'))
-
+    # --- Financial Summary String ---
     total_income = df[df['Type'] == 'Income']['Amount'].sum()
     total_expense = df[df['Type'] == 'Expense']['Amount'].sum()
 
@@ -75,6 +71,7 @@ eda_summary += str(df.describe(include='all'))
     - Expense Trend across Months: {df.groupby('Month')['Amount'].sum().to_dict()}
     """
 
+    # --- AI Chat Interface ---
     st.markdown("---")
     st.subheader("💬 Ask SmartSpend Copilot")
 
@@ -96,3 +93,4 @@ eda_summary += str(df.describe(include='all'))
 
 else:
     st.info("👈 Upload a CSV file to begin your analysis.")
+
